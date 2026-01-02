@@ -1,25 +1,28 @@
-# Verified Ledger: Differential Testing with a Formally Verified Model
+# Verified Ledger: Model-Based Conformance Testing Architecture
 
 [<img src="https://welltyped.systems/img/badge.png" alt="Welltyped Systems Badge" width="150" href/>](https://welltyped.systems)
 
-A sample project demonstrating the usage of formally verified models as oracles for differential testing, focusing on a simple ledger system implemented in Rust with a Lean 4 model.
+This repo contains a minimal reference architecture for model-based conformance testing of critical systems. It includes a formally verified Lean 4 model of a simple ledger system, an intentionally buggy Rust implementation, and a differential fuzzing harness that tests the Rust code against the Lean model.
 
 ## Differential testing for correctness and security
 
 Our approach to auditing correctness and security at [Welltyped Systems](https://welltyped.systems) is based on formal verification. We develop
 a simplified formal model of the target system/subsystem in a proof assistant language (current Lean 4) and prove that the model satisfies the desired invariants. From this, we construct a fuzzing / property-based testing framework that differentially tests the target system against the formally verified model, identifying any divergences. By integrating these tests into CI/CD pipelines, we can continuously monitor the correctness of the implementation as it evolves.
 
-## What this repo contains
+## Ledger model
 
-Whilst this repo is a toy example, it illustrates the core components of differential testing with a formally verified model. It includes:
+The model is a simple ledger with accounts identified by strings and balances represented as `UInt64`. It supports three operations:
 
-- `/lean`: A simple Lean 4 model of a ledger system, alongisde proofs of key invariants.
-- `/src/ledger.rs`: An intentionally buggy Rust implementation of the same ledger system.
-- `/src/fuzz.rs`: A differential fuzzing harness that generates deterministically seeded pseudorandom sequences of ledger operations, and applies them to both the Lean model and the Rust implementation.
+- `deposit(account: String, amount: UInt64)`: Increases the balance of `account` by `amount`.
+- `withdraw(account: String, amount: UInt64)`: Decreases the balance of `account` by `amount` if sufficient funds exist; otherwise, it fails.
+- `transfer(from: String, to: String, amount: UInt64)`: Moves `amount` from `from` to `to` if `from` has sufficient funds; otherwise, it fails.
 
-In case of divergence, the harness reports the sequence of operations and states that led to the mismatch, enabling easy reproduction and debugging.
+## Repo structure
 
-### Intentional Rust bugs
+- `lean/`: Contains the Lean 4 model, FFI bindings, and proofs.
+- `src/`: Contains the Rust implementation of the ledger and the differential fuzzing harness.
+
+## Intentional Rust bugs
 
 - `withdraw` rejects withdrawals that exactly equal the balance (uses `<=` instead of `<`).
 - `transfer` withdraws and then deposits back into the sender account (never credits the recipient).
@@ -64,7 +67,7 @@ cargo run -- fuzz --cases 50 --steps 200 --max-amount 50
 cargo run -- replay --seed 12345 --steps 200
 ```
 
-### Build the Lean model
+### Build the Lean model standalone
 
 The Lean model and proofs are built implicitly by the Rust build process, but you can also build it manually:
 
