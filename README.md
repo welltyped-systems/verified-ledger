@@ -1,6 +1,7 @@
 # Verified Ledger: Differential Testing with a Formally Verified Model
 
 [<img src="https://welltyped.systems/img/badge.png" alt="Welltyped Systems Badge" width="150" href/>](https://welltyped.systems)
+
 A sample project demonstrating the usage of formally verified models as oracles for differential testing, focusing on a simple ledger system implemented in Rust with a Lean 4 model.
 
 ## Differential testing for correctness and security
